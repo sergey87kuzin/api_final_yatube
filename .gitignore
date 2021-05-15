@@ -148,4 +148,4 @@ dmypy.json
 # папки со статикой и медиа
 media/
 
-./api/tests.py
+api/tests.py
