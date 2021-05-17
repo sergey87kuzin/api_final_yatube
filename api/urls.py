@@ -12,13 +12,13 @@ router_v1.register(r'posts/(?P<post_id>[0-9]+)/comments',
 router_v1.register(r'follow', FollowViewSet, basename='follows')
 router_v1.register(r'group', GroupViewSet, basename='groups')
 
-api_patterns = [
-    path('v1/', include(router_v1.urls)),
-    path('v1/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('v1/token/refresh/', TokenRefreshView.as_view(),
+v1_patterns = [
+    path('', include(router_v1.urls)),
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(),
          name='token_refresh'),
 ]
 
 urlpatterns = [
-    path('api/', include(api_patterns)),
+    path('v1/', include(v1_patterns)),
 ]
