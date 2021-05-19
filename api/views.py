@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import mixins, status, viewsets
+from rest_framework import filters, mixins, status, viewsets
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
@@ -54,27 +54,11 @@ class GroupViewSet(CustomViewSet):
 class FollowViewSet(CustomViewSet):
     serializer_class = FollowSerializer
     permission_classes = [IsAuthenticated]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['user__username', 'following__username']
 
     def get_queryset(self):
-        queryset = Follow.objects.filter(following=self.request.user)
-        username = self.request.query_params.get('search', None)
-        if username:
-            user = get_object_or_404(User, username=username)
-            queryset = queryset.filter(user=user)
-        return queryset
+        return Follow.objects.filter(following=self.request.user)
 
-    def create(self, request):
-        username = request.data.get('following')
-        if username:
-            user = get_object_or_404(User, username=username)
-            if user == self.request.user:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
-            data = {'following': user, 'user': self.request.user}
-            serializer = FollowSerializer(data=data)
-            serializer.is_valid(raise_exception=True)
-            serializer.save(following=user, user=self.request.user)
-            headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data,
-                            status=status.HTTP_201_CREATED,
-                            headers=headers)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
